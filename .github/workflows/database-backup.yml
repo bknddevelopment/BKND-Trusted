@@ -1,0 +1,254 @@
+name: Database Backup & Maintenance
+
+on:
+  schedule:
+    # Daily backup at 3 AM UTC
+    - cron: '0 3 * * *'
+    # Weekly maintenance on Sunday at 4 AM UTC
+    - cron: '0 4 * * 0'
+  workflow_dispatch:
+    inputs:
+      backup_type:
+        description: 'Type of backup'
+        required: true
+        default: 'incremental'
+        type: choice
+        options:
+          - incremental
+          - full
+          - restore
+
+env:
+  RETENTION_DAYS: 30
+  BACKUP_BUCKET: bknd-trusted-backups
+
+jobs:
+  database-backup:
+    name: Database Backup
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup backup tools
+        run: |
+          # Install PostgreSQL client tools
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-16
+
+          # Install AWS CLI for S3 upload
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+
+      - name: Create backup
+        run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          BACKUP_TYPE="${{ github.event.inputs.backup_type || 'incremental' }}"
+          BACKUP_FILE="backup_${BACKUP_TYPE}_${TIMESTAMP}.sql.gz"
+
+          echo "Creating ${BACKUP_TYPE} backup: ${BACKUP_FILE}"
+
+          # Create backup
+          if [ "$BACKUP_TYPE" = "full" ]; then
+            pg_dump $DATABASE_URL --no-owner --clean --if-exists | gzip > $BACKUP_FILE
+          else
+            # Incremental backup (only changed data since last backup)
+            pg_dump $DATABASE_URL --no-owner --data-only --inserts | gzip > $BACKUP_FILE
+          fi
+
+          # Check backup size
+          BACKUP_SIZE=$(du -h $BACKUP_FILE | cut -f1)
+          echo "Backup size: $BACKUP_SIZE"
+
+          # Verify backup integrity
+          gunzip -t $BACKUP_FILE
+          echo "Backup integrity verified"
+
+          echo "BACKUP_FILE=${BACKUP_FILE}" >> $GITHUB_ENV
+          echo "BACKUP_SIZE=${BACKUP_SIZE}" >> $GITHUB_ENV
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Upload to S3
+        run: |
+          # Upload to S3 with encryption
+          aws s3 cp ${{ env.BACKUP_FILE }} \
+            s3://${{ env.BACKUP_BUCKET }}/$(date +%Y/%m/%d)/${{ env.BACKUP_FILE }} \
+            --sse AES256 \
+            --storage-class STANDARD_IA
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+
+      - name: Cleanup old backups
+        run: |
+          # Remove backups older than retention period
+          aws s3 ls s3://${{ env.BACKUP_BUCKET }}/ --recursive \
+            | awk '{print $4}' \
+            | while read -r file; do
+              file_date=$(echo $file | grep -oE '[0-9]{8}')
+              if [ ! -z "$file_date" ]; then
+                days_old=$(( ($(date +%s) - $(date -d "$file_date" +%s)) / 86400 ))
+                if [ $days_old -gt ${{ env.RETENTION_DAYS }} ]; then
+                  echo "Deleting old backup: $file (${days_old} days old)"
+                  aws s3 rm s3://${{ env.BACKUP_BUCKET }}/$file
+                fi
+              fi
+            done
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Test backup restoration
+        if: github.event.schedule == '0 4 * * 0'  # Weekly test
+        run: |
+          echo "Testing backup restoration to verify backup integrity"
+
+          # Create test database
+          createdb -h localhost test_restore || true
+
+          # Restore backup to test database
+          gunzip -c ${{ env.BACKUP_FILE }} | psql -h localhost test_restore
+
+          # Verify restoration
+          psql -h localhost test_restore -c "SELECT COUNT(*) FROM properties;" || true
+
+          # Cleanup test database
+          dropdb -h localhost test_restore || true
+
+      - name: Record backup metadata
+        run: |
+          # Save backup metadata
+          cat > backup-metadata.json << EOF
+          {
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "file": "${{ env.BACKUP_FILE }}",
+            "size": "${{ env.BACKUP_SIZE }}",
+            "type": "${{ github.event.inputs.backup_type || 'incremental' }}",
+            "location": "s3://${{ env.BACKUP_BUCKET }}/$(date +%Y/%m/%d)/${{ env.BACKUP_FILE }}",
+            "retention_days": ${{ env.RETENTION_DAYS }}
+          }
+          EOF
+
+          # Store metadata
+          aws s3 cp backup-metadata.json \
+            s3://${{ env.BACKUP_BUCKET }}/metadata/latest.json
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Send backup notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            Database backup completed
+            Type: ${{ github.event.inputs.backup_type || 'incremental' }}
+            Size: ${{ env.BACKUP_SIZE }}
+            File: ${{ env.BACKUP_FILE }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        if: always()
+
+  database-maintenance:
+    name: Database Maintenance
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 4 * * 0'  # Weekly on Sunday
+    environment:
+      name: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run VACUUM
+        run: |
+          echo "Running VACUUM to reclaim storage"
+          psql $DATABASE_URL -c "VACUUM ANALYZE;"
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Reindex tables
+        run: |
+          echo "Reindexing tables for better performance"
+          psql $DATABASE_URL -c "REINDEX DATABASE bknd_trusted;"
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Analyze query performance
+        run: |
+          echo "Analyzing slow queries"
+          psql $DATABASE_URL << EOF
+            SELECT
+              query,
+              calls,
+              total_time,
+              mean,
+              max
+            FROM pg_stat_statements
+            WHERE mean > 1000  -- queries taking more than 1 second
+            ORDER BY mean DESC
+            LIMIT 10;
+          EOF
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Check table sizes
+        run: |
+          echo "Checking table sizes"
+          psql $DATABASE_URL << EOF
+            SELECT
+              schemaname AS schema,
+              tablename AS table,
+              pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS size
+            FROM pg_tables
+            ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC
+            LIMIT 20;
+          EOF
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+  restore-database:
+    name: Restore Database
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.backup_type == 'restore'
+    environment:
+      name: production-restore
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: List available backups
+        run: |
+          echo "Available backups:"
+          aws s3 ls s3://${{ env.BACKUP_BUCKET }}/ --recursive | grep -E '\.sql\.gz$' | tail -10
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Download latest backup
+        run: |
+          # Get latest backup
+          LATEST_BACKUP=$(aws s3 ls s3://${{ env.BACKUP_BUCKET }}/ --recursive \
+            | grep -E '\.sql\.gz$' | sort | tail -1 | awk '{print $4}')
+
+          echo "Downloading: $LATEST_BACKUP"
+          aws s3 cp s3://${{ env.BACKUP_BUCKET }}/$LATEST_BACKUP restore.sql.gz
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Restore database
+        run: |
+          echo "⚠️  WARNING: This will restore the production database!"
+          echo "Waiting 30 seconds before proceeding..."
+          sleep 30
+
+          # Create backup of current state
+          pg_dump $DATABASE_URL --no-owner | gzip > pre_restore_backup.sql.gz
+
+          # Restore from backup
+          gunzip -c restore.sql.gz | psql $DATABASE_URL
+
+          echo "Database restored successfully"
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

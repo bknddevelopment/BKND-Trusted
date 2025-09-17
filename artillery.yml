@@ -1,0 +1,183 @@
+# Artillery Load Testing Configuration
+# Target: <2 seconds page load on 3G networks under load
+
+config:
+  target: 'http://localhost:3000'
+  phases:
+    # Warm-up phase
+    - duration: 30
+      arrivalRate: 1
+      name: 'Warm up'
+
+    # Ramp up phase
+    - duration: 60
+      arrivalRate: 5
+      rampTo: 20
+      name: 'Ramp up load'
+
+    # Sustained load phase
+    - duration: 120
+      arrivalRate: 20
+      name: 'Sustained load'
+
+    # Spike test
+    - duration: 30
+      arrivalRate: 50
+      name: 'Spike test'
+
+    # Cool down
+    - duration: 30
+      arrivalRate: 5
+      name: 'Cool down'
+
+  # Performance thresholds
+  ensure:
+    thresholds:
+      - http.response_time.p95: 2000  # 95% of requests under 2s
+      - http.response_time.p99: 3000  # 99% of requests under 3s
+      - http.response_time.median: 1000 # Median under 1s
+      - http.codes.200: 100  # All requests should succeed
+
+  # Simulated network conditions
+  network:
+    # 3G network simulation
+    download: 1.6  # Mbps
+    upload: 0.768  # Mbps
+    latency: 300   # ms
+
+  processor: './artillery-processor.js'
+
+  # Custom metrics
+  customMetrics:
+    - name: 'LCP'
+      description: 'Largest Contentful Paint'
+      unit: 'ms'
+    - name: 'FCP'
+      description: 'First Contentful Paint'
+      unit: 'ms'
+    - name: 'TTFB'
+      description: 'Time to First Byte'
+      unit: 'ms'
+
+# Test scenarios
+scenarios:
+  # Homepage test
+  - name: 'Homepage Load Test'
+    weight: 30
+    flow:
+      - get:
+          url: '/'
+          capture:
+            - header: 'x-response-time'
+              as: 'responseTime'
+          expect:
+            - statusCode: 200
+            - contentType: 'text/html'
+            - hasHeader: 'cache-control'
+      - think: 3
+      - log: 'Homepage response time: {{ responseTime }}ms'
+
+  # API endpoint test
+  - name: 'API Performance Test'
+    weight: 20
+    flow:
+      - get:
+          url: '/api/health'
+          expect:
+            - statusCode: 200
+            - contentType: 'application/json'
+            - hasHeader: 'cache-control'
+      - think: 1
+      - get:
+          url: '/api/products'
+          expect:
+            - statusCode: 200
+            - contentType: 'application/json'
+
+  # Static asset loading
+  - name: 'Static Asset Test'
+    weight: 15
+    flow:
+      - get:
+          url: '/_next/static/chunks/main.js'
+          expect:
+            - statusCode: 200
+            - hasHeader: 'cache-control'
+      - parallel:
+          - get:
+              url: '/images/hero.webp'
+              expect:
+                - statusCode: 200
+          - get:
+              url: '/fonts/inter-var.woff2'
+              expect:
+                - statusCode: 200
+
+  # User journey simulation
+  - name: 'User Journey Test'
+    weight: 20
+    flow:
+      # Landing page
+      - get:
+          url: '/'
+          capture:
+            json: '$.csrfToken'
+            as: 'token'
+      - think: 2
+
+      # Navigate to features
+      - get:
+          url: '/features'
+          expect:
+            - statusCode: 200
+      - think: 3
+
+      # Navigate to pricing
+      - get:
+          url: '/pricing'
+          expect:
+            - statusCode: 200
+      - think: 2
+
+      # Contact form
+      - post:
+          url: '/api/contact'
+          json:
+            name: 'Test User'
+            email: 'test@example.com'
+            message: 'Performance test message'
+          headers:
+            'X-CSRF-Token': '{{ token }}'
+          expect:
+            - statusCode: [200, 201]
+
+  # Search functionality test
+  - name: 'Search Performance Test'
+    weight: 15
+    flow:
+      - get:
+          url: '/api/search?q=database'
+          expect:
+            - statusCode: 200
+            - contentType: 'application/json'
+          capture:
+            - json: '$.results[0].id'
+              as: 'firstResultId'
+      - think: 1
+      - get:
+          url: '/api/products/{{ firstResultId }}'
+          expect:
+            - statusCode: 200
+
+# Before/After hooks
+before:
+  flow:
+    - log: 'Starting performance test run'
+    - get:
+          url: '/api/health'
+          expect:
+            - statusCode: 200
+
+after:
+  flow:
+    - log: 'Performance test completed'

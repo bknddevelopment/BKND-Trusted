@@ -1,0 +1,301 @@
+name: Static Page Generation
+
+on:
+  schedule:
+    # Run every day at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      batch_size:
+        description: 'Number of pages per batch'
+        required: false
+        default: '1000'
+      start_index:
+        description: 'Starting index for generation'
+        required: false
+        default: '0'
+      incremental:
+        description: 'Use incremental static regeneration'
+        required: false
+        type: boolean
+        default: true
+
+env:
+  NODE_VERSION: '20'
+  MAX_CONCURRENT_BUILDS: 10
+  BATCH_SIZE: ${{ github.event.inputs.batch_size || '1000' }}
+  START_INDEX: ${{ github.event.inputs.start_index || '0' }}
+
+jobs:
+  prepare-generation:
+    name: Prepare Static Generation
+    runs-on: ubuntu-latest
+    outputs:
+      total-pages: ${{ steps.count.outputs.total }}
+      batch-matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Count total pages
+        id: count
+        run: |
+          # Get total count from database or API
+          TOTAL=$(node -e "
+            // This would normally query your database
+            const total = 50000; // Example: 50,000 properties
+            console.log(total);
+          ")
+          echo "total=${TOTAL}" >> $GITHUB_OUTPUT
+
+      - name: Create batch matrix
+        id: matrix
+        run: |
+          node -e "
+            const total = ${{ steps.count.outputs.total }};
+            const batchSize = ${{ env.BATCH_SIZE }};
+            const startIndex = ${{ env.START_INDEX }};
+            const batches = [];
+
+            for (let i = startIndex; i < total; i += batchSize) {
+              batches.push({
+                start: i,
+                end: Math.min(i + batchSize, total),
+                batch: Math.floor(i / batchSize) + 1
+              });
+            }
+
+            // Limit to MAX_CONCURRENT_BUILDS batches at a time
+            const limitedBatches = batches.slice(0, ${{ env.MAX_CONCURRENT_BUILDS }});
+            console.log(JSON.stringify({ include: limitedBatches }));
+          " > matrix.json
+
+          MATRIX=$(cat matrix.json)
+          echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
+
+  generate-static-batch:
+    name: Generate Batch ${{ matrix.batch }}
+    needs: prepare-generation
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJSON(needs.prepare-generation.outputs.batch-matrix) }}
+      max-parallel: 5
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Cache dependencies and build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            .next/cache
+          key: static-gen-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Generate static pages
+        run: |
+          echo "Generating pages ${{ matrix.start }} to ${{ matrix.end }}"
+
+          # Create generation script
+          cat > generate-batch.js << 'EOF'
+          const fs = require('fs').promises;
+          const path = require('path');
+
+          async function generateBatch(start, end) {
+            console.log(`Generating batch: ${start} to ${end}`);
+
+            // This is where you would implement your actual static generation logic
+            // For example, fetching property data and generating static HTML
+
+            const pages = [];
+            for (let i = start; i < end; i++) {
+              // Simulate page generation
+              const pageData = {
+                id: i,
+                path: `/property/${i}`,
+                generated: new Date().toISOString()
+              };
+              pages.push(pageData);
+
+              // Generate actual page (this is a simplified example)
+              const pageContent = `
+                <!DOCTYPE html>
+                <html>
+                  <head>
+                    <title>Property ${i} - BKND Trusted</title>
+                    <meta name="description" content="Property listing ${i}">
+                  </head>
+                  <body>
+                    <h1>Property ${i}</h1>
+                    <p>Generated at ${pageData.generated}</p>
+                  </body>
+                </html>
+              `;
+
+              // Save to output directory
+              const outputDir = path.join('out', 'property');
+              await fs.mkdir(outputDir, { recursive: true });
+              await fs.writeFile(
+                path.join(outputDir, `${i}.html`),
+                pageContent
+              );
+
+              // Log progress every 100 pages
+              if (i % 100 === 0) {
+                console.log(`Progress: ${i - start} / ${end - start}`);
+              }
+            }
+
+            // Save manifest
+            const manifestPath = `batch-manifest-${start}-${end}.json`;
+            await fs.writeFile(manifestPath, JSON.stringify({
+              batch: { start, end },
+              pages: pages.length,
+              generated: new Date().toISOString()
+            }, null, 2));
+
+            console.log(`Batch complete: Generated ${pages.length} pages`);
+            return pages.length;
+          }
+
+          // Run generation
+          generateBatch(
+            parseInt(process.argv[2]),
+            parseInt(process.argv[3])
+          ).catch(console.error);
+          EOF
+
+          node generate-batch.js ${{ matrix.start }} ${{ matrix.end }}
+
+      - name: Check incremental regeneration
+        if: github.event.inputs.incremental == 'true'
+        run: |
+          echo "Checking for changes since last generation"
+          # Compare with previous generation to determine what needs updating
+
+      - name: Upload batch artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-batch-${{ matrix.batch }}
+          path: |
+            out/property/
+            batch-manifest-*.json
+          retention-days: 7
+
+      - name: Cache generated pages
+        uses: actions/cache@v4
+        with:
+          path: out/property/
+          key: pages-batch-${{ matrix.batch }}-${{ github.sha }}
+
+  merge-static-pages:
+    name: Merge Static Pages
+    needs: generate-static-batch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all batch artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: static-batch-*
+          path: ./batches
+
+      - name: Merge batches
+        run: |
+          echo "Merging all generated batches"
+
+          # Create output directory
+          mkdir -p out/property
+
+          # Copy all generated pages
+          find ./batches -name "*.html" -exec cp {} out/property/ \;
+
+          # Merge manifests
+          cat ./batches/*/batch-manifest-*.json | jq -s '.' > generation-manifest.json
+
+          # Count total pages
+          TOTAL=$(find out/property -name "*.html" | wc -l)
+          echo "Total pages generated: $TOTAL"
+
+      - name: Optimize generated pages
+        run: |
+          # Minify HTML
+          npx html-minifier-terser --input-dir out --output-dir out \
+            --file-ext html --collapse-whitespace --remove-comments \
+            --minify-css --minify-js || true
+
+          # Generate sitemap
+          node -e "
+            const fs = require('fs');
+            const pages = fs.readdirSync('out/property')
+              .filter(f => f.endsWith('.html'))
+              .map(f => f.replace('.html', ''));
+
+            const sitemap = '<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n' +
+              '<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n' +
+              pages.map(id =>
+                '  <url>\n' +
+                '    <loc>https://bkndtrusted.com/property/' + id + '</loc>\n' +
+                '    <lastmod>' + new Date().toISOString() + '</lastmod>\n' +
+                '    <changefreq>daily</changefreq>\n' +
+                '    <priority>0.8</priority>\n' +
+                '  </url>'
+              ).join('\n') + '\n' +
+              '</urlset>';
+
+            fs.writeFileSync('out/sitemap.xml', sitemap);
+            console.log('Generated sitemap with ' + pages.length + ' URLs');
+          "
+
+      - name: Upload complete static site
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-site-complete
+          path: |
+            out/
+            generation-manifest.json
+          retention-days: 30
+
+      - name: Deploy to CDN
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "Deploying static pages to CDN"
+          # Deploy to CloudFlare, AWS S3, or other CDN
+          # aws s3 sync out/ s3://bkndtrusted-static/ --delete
+          # cloudflare pages publish out/ --project-name=bknd-trusted
+
+  notify-completion:
+    name: Notify Generation Complete
+    needs: merge-static-pages
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Send notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            Static page generation completed
+            Total pages: ${{ needs.prepare-generation.outputs.total-pages }}
+            Status: ${{ job.status }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        if: always()

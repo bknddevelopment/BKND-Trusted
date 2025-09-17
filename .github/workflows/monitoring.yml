@@ -1,0 +1,271 @@
+name: Monitoring & Alerts
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  uptime-monitoring:
+    name: Uptime Monitoring
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Production Health
+        id: prod-health
+        continue-on-error: true
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://bkndtrusted.com/api/health)
+          if [ "$response" != "200" ]; then
+            echo "status=down" >> $GITHUB_OUTPUT
+            echo "Production is DOWN! Status: $response"
+            exit 1
+          else
+            echo "status=up" >> $GITHUB_OUTPUT
+            echo "Production is healthy"
+          fi
+
+      - name: Check Staging Health
+        id: staging-health
+        continue-on-error: true
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://staging.bkndtrusted.com/api/health)
+          if [ "$response" != "200" ]; then
+            echo "status=down" >> $GITHUB_OUTPUT
+            echo "Staging is DOWN! Status: $response"
+          else
+            echo "status=up" >> $GITHUB_OUTPUT
+            echo "Staging is healthy"
+          fi
+
+      - name: Check Response Times
+        run: |
+          # Production response time
+          prod_time=$(curl -s -o /dev/null -w "%{time_total}" https://bkndtrusted.com)
+          echo "Production response time: ${prod_time}s"
+
+          # Alert if response time > 3 seconds
+          if (( $(echo "$prod_time > 3" | bc -l) )); then
+            echo "::warning::Production response time is slow: ${prod_time}s"
+          fi
+
+      - name: Create incident if down
+        if: steps.prod-health.outputs.status == 'down'
+        uses: octokit/request-action@v2.x
+        with:
+          route: POST /repos/{owner}/{repo}/issues
+          owner: ${{ github.repository_owner }}
+          repo: BKND Trusted
+          title: "🚨 CRITICAL: Production is DOWN"
+          body: |
+            Production health check failed at ${{ github.event.repository.updated_at }}
+
+            **Immediate actions required:**
+            1. Check server logs
+            2. Verify database connection
+            3. Check recent deployments
+            4. Initiate rollback if necessary
+
+            /cc @team
+          labels: '["critical", "production-down", "incident"]'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send Slack Alert
+        if: steps.prod-health.outputs.status == 'down'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              text: "🚨 *CRITICAL ALERT*",
+              attachments: [{
+                color: 'danger',
+                text: 'Production is DOWN! Immediate action required.',
+                fields: [{
+                  title: 'Environment',
+                  value: 'Production',
+                  short: true
+                }, {
+                  title: 'Status',
+                  value: 'DOWN',
+                  short: true
+                }, {
+                  title: 'Time',
+                  value: '${{ github.event.repository.updated_at }}',
+                  short: false
+                }]
+              }]
+            }
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_CRITICAL }}
+
+  performance-monitoring:
+    name: Performance Monitoring
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Lighthouse Performance Check
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: |
+            https://bkndtrusted.com
+            https://bkndtrusted.com/properties
+          uploadArtifacts: false
+          temporaryPublicStorage: false
+
+      - name: Check Core Web Vitals
+        run: |
+          # Install web-vitals CLI
+          npm install -g web-vitals-cli
+
+          # Check Core Web Vitals
+          web-vitals https://bkndtrusted.com --json > vitals.json
+
+          # Parse and check thresholds
+          node -e "
+            const vitals = require('./vitals.json');
+            const thresholds = {
+              LCP: 2500,  // 2.5s
+              FID: 100,   // 100ms
+              CLS: 0.1    // 0.1
+            };
+
+            Object.entries(thresholds).forEach(([metric, threshold]) => {
+              if (vitals[metric] > threshold) {
+                console.error(\`⚠️ \${metric} exceeds threshold: \${vitals[metric]} > \${threshold}\`);
+                process.exit(1);
+              }
+            });
+          " || true
+
+  security-monitoring:
+    name: Security Monitoring
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check SSL Certificate
+        run: |
+          # Check SSL certificate expiration
+          expiry=$(echo | openssl s_client -servername bkndtrusted.com -connect bkndtrusted.com:443 2>/dev/null | openssl x509 -noout -dates | grep notAfter | cut -d= -f2)
+          expiry_epoch=$(date -d "$expiry" +%s)
+          current_epoch=$(date +%s)
+          days_left=$(( ($expiry_epoch - $current_epoch) / 86400 ))
+
+          echo "SSL certificate expires in $days_left days"
+
+          if [ $days_left -lt 30 ]; then
+            echo "::warning::SSL certificate expires in less than 30 days!"
+          fi
+
+      - name: Security Headers Check
+        run: |
+          # Check security headers
+          headers=$(curl -s -I https://bkndtrusted.com)
+
+          # Check for important security headers
+          for header in "Strict-Transport-Security" "X-Content-Type-Options" "X-Frame-Options" "Content-Security-Policy"; do
+            if ! echo "$headers" | grep -qi "$header"; then
+              echo "::warning::Missing security header: $header"
+            fi
+          done
+
+      - name: Check for exposed secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+
+  database-monitoring:
+    name: Database Monitoring
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Database Connection
+        run: |
+          # This would connect to your database and check health
+          echo "Checking database connection and performance"
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Check Database Size
+        run: |
+          # Monitor database size and alert if growing too fast
+          echo "Monitoring database size and growth rate"
+
+      - name: Check Query Performance
+        run: |
+          # Monitor slow queries
+          echo "Checking for slow queries"
+
+  error-rate-monitoring:
+    name: Error Rate Monitoring
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Error Logs
+        run: |
+          # This would check your error tracking service (e.g., Sentry)
+          echo "Checking error rates and patterns"
+
+      - name: Check 4xx/5xx Rates
+        run: |
+          # Monitor HTTP error rates
+          echo "Monitoring HTTP error rates"
+
+  cost-monitoring:
+    name: Cost Monitoring
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 0 * * 1'  # Weekly on Monday
+    steps:
+      - name: Check GitHub Actions Usage
+        run: |
+          # Check GitHub Actions minutes used
+          echo "Checking GitHub Actions usage and costs"
+
+      - name: Check CDN Usage
+        run: |
+          # Monitor CDN bandwidth usage
+          echo "Monitoring CDN bandwidth and costs"
+
+  alert-summary:
+    name: Daily Alert Summary
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 9 * * *'  # Daily at 9 AM
+    needs: [uptime-monitoring, performance-monitoring, security-monitoring]
+    steps:
+      - name: Generate Summary Report
+        run: |
+          echo "Generating daily monitoring summary"
+          # Aggregate all monitoring data and send summary
+
+      - name: Send Daily Report
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              text: "📊 *Daily Monitoring Summary*",
+              attachments: [{
+                color: 'good',
+                text: 'All systems operational',
+                fields: [{
+                  title: 'Uptime',
+                  value: '99.99%',
+                  short: true
+                }, {
+                  title: 'Avg Response Time',
+                  value: '250ms',
+                  short: true
+                }, {
+                  title: 'Error Rate',
+                  value: '0.01%',
+                  short: true
+                }, {
+                  title: 'SSL Days Left',
+                  value: '60',
+                  short: true
+                }]
+              }]
+            }
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}

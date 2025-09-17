@@ -1,0 +1,55 @@
+# CODEOWNERS for BKND Trusted
+# These users will be automatically requested for review when someone opens a pull request
+
+# Default owners for everything in the repo
+* @charwinvanryckdegroot
+
+# Frontend code
+/src/components/ @charwinvanryckdegroot
+/src/pages/ @charwinvanryckdegroot
+/src/styles/ @charwinvanryckdegroot
+/src/hooks/ @charwinvanryckdegroot
+/src/lib/ @charwinvanryckdegroot
+/src/utils/ @charwinvanryckdegroot
+
+# Backend/API code
+/src/api/ @charwinvanryckdegroot
+/src/server/ @charwinvanryckdegroot
+/api/ @charwinvanryckdegroot
+/server/ @charwinvanryckdegroot
+
+# Database
+/prisma/ @charwinvanryckdegroot
+/migrations/ @charwinvanryckdegroot
+*.sql @charwinvanryckdegroot
+
+# Configuration
+/.github/ @charwinvanryckdegroot
+/package.json @charwinvanryckdegroot
+/package-lock.json @charwinvanryckdegroot
+/next.config.js @charwinvanryckdegroot
+/tsconfig.json @charwinvanryckdegroot
+/.env* @charwinvanryckdegroot
+
+# Documentation
+/docs/ @charwinvanryckdegroot
+*.md @charwinvanryckdegroot
+
+# Tests
+/tests/ @charwinvanryckdegroot
+/__tests__/ @charwinvanryckdegroot
+*.test.* @charwinvanryckdegroot
+*.spec.* @charwinvanryckdegroot
+
+# Security-sensitive files
+/security/ @charwinvanryckdegroot
+SECURITY.md @charwinvanryckdegroot
+
+# DevOps and Infrastructure
+/.github/workflows/ @charwinvanryckdegroot
+/docker* @charwinvanryckdegroot
+/Dockerfile* @charwinvanryckdegroot
+/kubernetes/ @charwinvanryckdegroot
+/k8s/ @charwinvanryckdegroot
+/terraform/ @charwinvanryckdegroot
+/scripts/ @charwinvanryckdegroot

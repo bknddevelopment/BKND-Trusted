@@ -1,0 +1,159 @@
+{
+  "path": "/*",
+  "timings": [
+    {
+      "metric": "interactive",
+      "budget": 3000
+    },
+    {
+      "metric": "first-contentful-paint",
+      "budget": 1500
+    },
+    {
+      "metric": "first-meaningful-paint",
+      "budget": 2000
+    },
+    {
+      "metric": "speed-index",
+      "budget": 3000
+    },
+    {
+      "metric": "total-blocking-time",
+      "budget": 300
+    },
+    {
+      "metric": "largest-contentful-paint",
+      "budget": 2500
+    },
+    {
+      "metric": "cumulative-layout-shift",
+      "budget": 0.1
+    }
+  ],
+  "resourceSizes": [
+    {
+      "resourceType": "script",
+      "budget": 300
+    },
+    {
+      "resourceType": "stylesheet",
+      "budget": 100
+    },
+    {
+      "resourceType": "image",
+      "budget": 500
+    },
+    {
+      "resourceType": "media",
+      "budget": 1000
+    },
+    {
+      "resourceType": "font",
+      "budget": 100
+    },
+    {
+      "resourceType": "document",
+      "budget": 50
+    },
+    {
+      "resourceType": "other",
+      "budget": 100
+    },
+    {
+      "resourceType": "total",
+      "budget": 1500
+    }
+  ],
+  "resourceCounts": [
+    {
+      "resourceType": "third-party",
+      "budget": 10
+    },
+    {
+      "resourceType": "script",
+      "budget": 10
+    },
+    {
+      "resourceType": "stylesheet",
+      "budget": 5
+    },
+    {
+      "resourceType": "image",
+      "budget": 20
+    },
+    {
+      "resourceType": "media",
+      "budget": 5
+    },
+    {
+      "resourceType": "font",
+      "budget": 5
+    },
+    {
+      "resourceType": "document",
+      "budget": 5
+    },
+    {
+      "resourceType": "total",
+      "budget": 50
+    }
+  ],
+  "audits": [
+    {
+      "audit": "uses-webp-images",
+      "level": "warn"
+    },
+    {
+      "audit": "uses-optimized-images",
+      "level": "warn"
+    },
+    {
+      "audit": "uses-responsive-images",
+      "level": "warn"
+    },
+    {
+      "audit": "uses-rel-preconnect",
+      "level": "warn"
+    },
+    {
+      "audit": "uses-rel-preload",
+      "level": "warn"
+    },
+    {
+      "audit": "efficient-animated-content",
+      "level": "warn"
+    },
+    {
+      "audit": "offscreen-images",
+      "level": "warn"
+    },
+    {
+      "audit": "unminified-css",
+      "level": "error"
+    },
+    {
+      "audit": "unminified-javascript",
+      "level": "error"
+    },
+    {
+      "audit": "unused-css-rules",
+      "level": "warn"
+    },
+    {
+      "audit": "unused-javascript",
+      "level": "warn"
+    },
+    {
+      "audit": "modern-image-formats",
+      "level": "warn"
+    },
+    {
+      "audit": "uses-http2",
+      "level": "warn"
+    },
+    {
+      "audit": "uses-text-compression",
+      "level": "error"
+    }
+  ]
+}

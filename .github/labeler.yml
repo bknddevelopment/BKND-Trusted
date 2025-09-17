@@ -1,0 +1,40 @@
+# Configuration for auto-labeling PRs based on files changed
+
+frontend:
+  - any: ['src/components/**/*', 'src/pages/**/*', 'src/styles/**/*', 'src/hooks/**/*']
+
+backend:
+  - any: ['src/api/**/*', 'api/**/*', 'server/**/*', 'src/server/**/*']
+
+database:
+  - any: ['prisma/**/*', 'migrations/**/*', '**/*.sql']
+
+tests:
+  - any: ['**/*.test.*', '**/*.spec.*', 'tests/**/*', '__tests__/**/*']
+
+documentation:
+  - any: ['**/*.md', 'docs/**/*']
+
+dependencies:
+  - any: ['package.json', 'package-lock.json', 'yarn.lock']
+
+github-actions:
+  - any: ['.github/workflows/**/*']
+
+configuration:
+  - any: ['next.config.*', 'tsconfig.json', '.env*', '.*rc', '*.config.*']
+
+security:
+  - any: ['SECURITY.md', 'security/**/*', '.github/security/**/*']
+
+performance:
+  - any: ['lighthouse-budget.json', '**/*performance*', '**/*optimize*']
+
+styles:
+  - any: ['**/*.css', '**/*.scss', '**/*.sass', '**/*.styled.*', 'tailwind.config.*']
+
+docker:
+  - any: ['Dockerfile*', 'docker-compose.*', '.dockerignore']
+
+infrastructure:
+  - any: ['terraform/**/*', 'kubernetes/**/*', 'k8s/**/*', '.github/workflows/**/*']

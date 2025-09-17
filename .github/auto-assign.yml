@@ -1,0 +1,40 @@
+# Configuration for auto-assign bot
+# https://github.com/kentaro-m/auto-assign-action
+
+# Add reviewers to the pull request
+addReviewers: true
+
+# Add assignees to the pull request
+addAssignees: author
+
+# Number of reviewers to add (0 to add all reviewers)
+numberOfReviewers: 2
+
+# List of reviewers to be added
+reviewers:
+  - charwinvanryckdegroot
+  # Add team members here as the team grows
+
+# List of users to never assign as reviewers
+skipKeywords:
+  - wip
+  - draft
+  - '[WIP]'
+  - '[DRAFT]'
+
+# Assign reviewers from different groups
+# reviewerGroups:
+#   frontend:
+#     - reviewer1
+#     - reviewer2
+#   backend:
+#     - reviewer3
+#     - reviewer4
+
+# Use assignees as reviewers
+useAssigneeGroups: false
+
+# Keywords to use for assigning reviewers from groups
+# groupKeywords:
+#   frontend: ['frontend', 'ui', 'component']
+#   backend: ['backend', 'api', 'database']

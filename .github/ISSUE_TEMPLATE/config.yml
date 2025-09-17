@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Issue
+    url: https://github.com/[your-username]/BKND-Trusted/security/policy
+    about: Please report security vulnerabilities here
+  - name: Support
+    url: https://bkndtrusted.com/support
+    about: Get help from our support team
+  - name: Documentation
+    url: https://docs.bkndtrusted.com
+    about: Check our documentation first
+  - name: Community Discussion
+    url: https://github.com/[your-username]/BKND-Trusted/discussions
+    about: Ask questions and discuss with the community

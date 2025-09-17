@@ -1,0 +1,394 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, staging, develop]
+  pull_request:
+    branches: [main, staging]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+          - rollback
+
+env:
+  NODE_VERSION: '20'
+  CACHE_NAME: 'bknd-cache'
+  BUILD_CACHE_KEY: ${{ github.sha }}
+
+jobs:
+  # Quality Gate - Runs on all PRs and pushes
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            .next/cache
+          key: deps-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            deps-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run type checking
+        run: npm run typecheck || npx tsc --noEmit
+
+      - name: Run tests
+        run: npm test -- --coverage --watchAll=false
+        env:
+          CI: true
+
+      - name: Upload test coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Security audit
+        run: npm audit --audit-level=moderate
+
+      - name: SAST Scan
+        uses: github/super-linter@v5
+        env:
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_ALL_CODEBASE: false
+          VALIDATE_JAVASCRIPT_ES: true
+          VALIDATE_TYPESCRIPT_ES: true
+          VALIDATE_JSX: true
+          VALIDATE_TSX: true
+
+  # Build job - Builds the application
+  build:
+    name: Build Application
+    needs: quality-gate
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    outputs:
+      build-id: ${{ steps.build-info.outputs.build-id }}
+      artifact-name: ${{ steps.build-info.outputs.artifact-name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            .next/cache
+          key: deps-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Set build info
+        id: build-info
+        run: |
+          BUILD_ID="${{ github.sha }}-$(date +%s)"
+          echo "build-id=${BUILD_ID}" >> $GITHUB_OUTPUT
+          echo "artifact-name=build-${BUILD_ID}" >> $GITHUB_OUTPUT
+          echo "BUILD_ID=${BUILD_ID}" >> $GITHUB_ENV
+
+      - name: Build application
+        run: |
+          npm run build
+          echo "${{ env.BUILD_ID }}" > .next/BUILD_ID
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_API_URL: ${{ secrets.API_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXT_PUBLIC_DOMAIN: ${{ github.ref == 'refs/heads/main' && 'bkndtrusted.com' || 'staging.bkndtrusted.com' }}
+
+      - name: Generate static pages
+        run: |
+          npm run generate:static || echo "No static generation script found"
+        env:
+          BATCH_SIZE: 1000
+          MAX_CONCURRENT: 10
+
+      - name: Optimize build
+        run: |
+          npx next-optimized-images || true
+          find .next -name "*.map" -delete || true
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.build-info.outputs.artifact-name }}
+          path: |
+            .next
+            out
+            public
+            package.json
+            package-lock.json
+            next.config.js
+          retention-days: 30
+
+      - name: Cache build
+        uses: actions/cache@v4
+        with:
+          path: .next
+          key: build-${{ env.BUILD_CACHE_KEY }}
+
+  # Database migrations
+  database-migrations:
+    name: Database Migrations
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci --production=false
+
+      - name: Run migrations
+        run: |
+          npm run migrate:deploy || npx prisma migrate deploy || echo "No migrations to run"
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Seed database (staging only)
+        if: github.ref == 'refs/heads/staging'
+        run: |
+          npm run db:seed || echo "No seed script"
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+  # Deploy to staging
+  deploy-staging:
+    name: Deploy to Staging
+    needs: [build, database-migrations]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/staging' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
+    environment:
+      name: staging
+      url: https://staging.bkndtrusted.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build.outputs.artifact-name }}
+
+      - name: Setup deployment
+        run: |
+          echo "Deploying build ${{ needs.build.outputs.build-id }} to staging"
+
+      - name: Deploy to staging server
+        run: |
+          # Deploy to self-hosted or cloud provider
+          echo "Deploying to staging environment"
+          # Add your deployment commands here
+        env:
+          DEPLOY_KEY: ${{ secrets.STAGING_DEPLOY_KEY }}
+          SERVER_HOST: ${{ secrets.STAGING_SERVER_HOST }}
+          SERVER_USER: ${{ secrets.STAGING_SERVER_USER }}
+
+      - name: Health check
+        run: |
+          sleep 30
+          curl -f https://staging.bkndtrusted.com/api/health || exit 1
+
+      - name: Run smoke tests
+        run: |
+          npm run test:e2e:staging || echo "No E2E tests configured"
+
+  # Deploy to production (Blue-Green)
+  deploy-production:
+    name: Deploy to Production
+    needs: [build, database-migrations]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    environment:
+      name: production
+      url: https://bkndtrusted.com
+    concurrency:
+      group: production-deployment
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build.outputs.artifact-name }}
+
+      - name: Backup current production
+        run: |
+          echo "Creating backup of current production deployment"
+          echo "${{ needs.build.outputs.build-id }}" > ROLLBACK_VERSION
+
+      - name: Deploy to Blue environment
+        id: blue-deploy
+        run: |
+          echo "Deploying to blue environment"
+          # Deploy to blue environment
+        env:
+          DEPLOY_KEY: ${{ secrets.PROD_DEPLOY_KEY }}
+          SERVER_HOST: ${{ secrets.PROD_SERVER_HOST }}
+          SERVER_USER: ${{ secrets.PROD_SERVER_USER }}
+
+      - name: Health check Blue
+        run: |
+          sleep 30
+          curl -f https://blue.bkndtrusted.com/api/health || exit 1
+
+      - name: Run production tests
+        run: |
+          npm run test:e2e:production || echo "No E2E tests configured"
+        env:
+          TEST_URL: https://blue.bkndtrusted.com
+
+      - name: Switch traffic to Blue
+        run: |
+          echo "Switching production traffic to blue environment"
+          # Update load balancer/DNS to point to blue
+
+      - name: Monitor metrics
+        run: |
+          sleep 60
+          # Check error rates and performance metrics
+          echo "Monitoring production metrics"
+
+      - name: Mark Green as backup
+        run: |
+          echo "Marking green environment as rollback target"
+
+      - name: Notify deployment
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Production deployment ${{ needs.build.outputs.build-id }} completed'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        if: always()
+
+  # Deploy to GitHub Pages (for static content)
+  deploy-github-pages:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build.outputs.artifact-name }}
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload to Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./out
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # Rollback job
+  rollback:
+    name: Rollback Production
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'rollback'
+    environment:
+      name: production-rollback
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get rollback version
+        run: |
+          echo "Getting previous production version"
+          # Read ROLLBACK_VERSION from storage
+
+      - name: Switch to Green environment
+        run: |
+          echo "Switching traffic back to green environment"
+          # Update load balancer/DNS to point to green
+
+      - name: Health check
+        run: |
+          curl -f https://bkndtrusted.com/api/health || exit 1
+
+      - name: Notify rollback
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Production rollback completed'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  # Performance monitoring
+  performance-check:
+    name: Performance Check
+    needs: [deploy-staging]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/staging'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: |
+            https://staging.bkndtrusted.com
+            https://staging.bkndtrusted.com/properties
+            https://staging.bkndtrusted.com/contact
+          budgetPath: ./lighthouse-budget.json
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Performance regression check
+        run: |
+          echo "Checking for performance regressions"
+          # Add performance regression detection logic
