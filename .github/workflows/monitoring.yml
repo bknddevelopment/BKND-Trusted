@@ -103,7 +103,7 @@ jobs:
     name: Performance Monitoring
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Run Lighthouse Performance Check
         uses: treosh/lighthouse-ci-action@v11
@@ -143,7 +143,7 @@ jobs:
     name: Security Monitoring
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Check SSL Certificate
         run: |
