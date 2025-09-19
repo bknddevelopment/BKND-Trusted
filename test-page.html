@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Page</title>
+</head>
+<body>
+    <h1>Testing Page Visibility</h1>
+    <script>
+        // Test if page loads and check for errors
+        console.log('Page loaded successfully');
+
+        // Check for any console errors after a delay
+        setTimeout(() => {
+            fetch('http://localhost:3000')
+                .then(response => response.text())
+                .then(html => {
+                    // Check if HTML contains visible content
+                    if (html.includes('BKND TRUSTED')) {
+                        console.log('✅ HTML contains BKND TRUSTED text');
+                    }
+                    if (html.includes('opacity: 0') || html.includes('visibility: hidden')) {
+                        console.log('⚠️ Found potential visibility issues in HTML');
+                    }
+
+                    // Create iframe to test rendering
+                    const iframe = document.createElement('iframe');
+                    iframe.src = 'http://localhost:3000';
+                    iframe.style.width = '100%';
+                    iframe.style.height = '600px';
+                    iframe.style.border = '2px solid red';
+                    document.body.appendChild(iframe);
+
+                    iframe.onload = () => {
+                        console.log('✅ Iframe loaded');
+                        // Check if iframe has content
+                        try {
+                            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                            const bodyContent = iframeDoc.body.innerHTML;
+                            if (bodyContent.length > 100) {
+                                console.log('✅ Iframe has content, length:', bodyContent.length);
+                            } else {
+                                console.log('⚠️ Iframe appears empty');
+                            }
+                        } catch (e) {
+                            console.log('Cannot access iframe content (CORS)');
+                        }
+                    };
+                })
+                .catch(err => console.error('Fetch error:', err));
+        }, 1000);
+    </script>
+</body>
+</html>

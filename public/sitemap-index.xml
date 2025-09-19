@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Main sitemap -->
+  <sitemap>
+    <loc>https://bkndtrusted.com/sitemap.xml</loc>
+    <lastmod>2025-01-19</lastmod>
+  </sitemap>
+
+  <!-- Service pages sitemap -->
+  <sitemap>
+    <loc>https://bkndtrusted.com/sitemap-services.xml</loc>
+    <lastmod>2025-01-19</lastmod>
+  </sitemap>
+
+  <!-- Location pages sitemap -->
+  <sitemap>
+    <loc>https://bkndtrusted.com/sitemap-locations.xml</loc>
+    <lastmod>2025-01-19</lastmod>
+  </sitemap>
+
+  <!-- Comparison pages sitemap -->
+  <sitemap>
+    <loc>https://bkndtrusted.com/sitemap-comparisons.xml</loc>
+    <lastmod>2025-01-19</lastmod>
+  </sitemap>
+
+  <!-- Industry pages sitemap -->
+  <sitemap>
+    <loc>https://bkndtrusted.com/sitemap-industries.xml</loc>
+    <lastmod>2025-01-19</lastmod>
+  </sitemap>
+
+  <!-- Use cases sitemap -->
+  <sitemap>
+    <loc>https://bkndtrusted.com/sitemap-use-cases.xml</loc>
+    <lastmod>2025-01-19</lastmod>
+  </sitemap>
+
+  <!-- Dynamic server-generated sitemap -->
+  <sitemap>
+    <loc>https://bkndtrusted.com/server-sitemap-index.xml</loc>
+    <lastmod>2025-01-19</lastmod>
+  </sitemap>
+</sitemapindex>

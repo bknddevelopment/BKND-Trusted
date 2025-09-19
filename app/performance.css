@@ -1,0 +1,178 @@
+/* Performance Optimizations for BKND Trusted */
+
+/* GPU Acceleration and Compositing Hints */
+@supports (will-change: transform) {
+  .will-change-transform {
+    will-change: transform;
+  }
+
+  .will-change-opacity {
+    will-change: opacity;
+  }
+
+  .will-change-filter {
+    will-change: filter;
+  }
+
+  .will-change-auto {
+    will-change: auto;
+  }
+}
+
+/* Force GPU acceleration for smooth animations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+}
+
+/* Layout containment for better performance */
+.contain-layout {
+  contain: layout;
+}
+
+.contain-paint {
+  contain: paint;
+}
+
+.contain-size {
+  contain: size;
+}
+
+.contain-style {
+  contain: style;
+}
+
+.contain-strict {
+  contain: strict;
+}
+
+.contain-content {
+  contain: content;
+}
+
+/* Optimize animations for 60fps */
+@media screen {
+  .smooth-animation {
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    animation-fill-mode: both;
+  }
+
+  .smooth-transition {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Reduce paint areas */
+.isolate {
+  isolation: isolate;
+}
+
+/* Optimize text rendering */
+.text-rendering-optimize {
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optimize image rendering */
+.image-rendering-optimize {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Disable animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+  }
+
+  .scroll-behavior-auto {
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Optimize scroll performance */
+.smooth-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent layout shift during animations */
+.aspect-stable {
+  aspect-ratio: attr(width) / attr(height);
+}
+
+/* Optimize hover states */
+@media (hover: hover) and (pointer: fine) {
+  .hover-optimize:hover {
+    transition-duration: 150ms;
+  }
+}
+
+/* Critical CSS for above-the-fold content */
+.critical {
+  /* Preload critical animations */
+  animation-play-state: paused;
+}
+
+.critical.ready {
+  animation-play-state: running;
+}
+
+/* Optimize large animations */
+.animation-optimize {
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+}
+
+/* Reduce repaints for fixed elements */
+.fixed-optimize {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Optimize backdrop filters */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .backdrop-optimize {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+}
+
+/* Content visibility for performance */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
+/* Optimize font loading */
+.font-display-swap {
+  font-display: swap;
+}
+
+.font-display-optional {
+  font-display: optional;
+}
+
+/* Reduce CSS calculations */
+.calc-optimize {
+  --calculated-value: calc(100% - var(--spacing));
+  width: var(--calculated-value);
+}
+
+/* Touch optimization */
+@media (pointer: coarse) {
+  .touch-optimize {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+}

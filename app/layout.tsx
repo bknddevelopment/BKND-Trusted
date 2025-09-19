@@ -1,105 +1,116 @@
-import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
-import './globals.css'
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import Script from 'next/script';
+import PerformanceProvider from '@/components/PerformanceProvider';
+import './globals.css';
+import './animations.css';
 
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-inter'
-})
+  preload: true,
+  fallback: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+  adjustFontFallback: true
+});
 
-export const viewport: Viewport = {
+export const metadata: Metadata = {
+  title: 'BKND Trusted - Verified Local Business Directory',
+  description: 'Find trusted, verified local service providers. All businesses are background-checked, licensed, and insured. Get quotes from top-rated professionals in your area.',
+  keywords: 'local services, trusted contractors, verified businesses, home services, professional services',
+  openGraph: {
+    title: 'BKND Trusted - Verified Local Business Directory',
+    description: 'Find trusted, verified local service providers.',
+    type: 'website',
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'black-translucent',
+  },
+};
+
+export const viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
-  themeColor: '#0ea5e9'
-}
-
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://bkndtrusted.com'),
-  title: {
-    default: 'BKND Trusted - Enterprise Database & Backend Infrastructure Solutions',
-    template: '%s | BKND Trusted'
-  },
-  description: 'Enterprise-grade database and backend infrastructure solutions. PostgreSQL, MongoDB, Redis hosting with 99.99% uptime SLA, automated backups, and 24/7 expert support.',
-  keywords: [
-    'database hosting',
-    'backend infrastructure',
-    'PostgreSQL hosting',
-    'MongoDB hosting',
-    'Redis hosting',
-    'managed database',
-    'DBaaS',
-    'BaaS',
-    'cloud database',
-    'database management'
-  ],
-  authors: [{ name: 'BKND Trusted' }],
-  creator: 'BKND Trusted',
-  publisher: 'BKND Trusted',
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
-  },
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: 'https://bkndtrusted.com',
-    siteName: 'BKND Trusted',
-    title: 'BKND Trusted - Enterprise Database & Backend Infrastructure',
-    description: 'Enterprise-grade database and backend infrastructure solutions with 99.99% uptime SLA',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'BKND Trusted - Database & Backend Infrastructure',
-      }
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'BKND Trusted - Enterprise Database & Backend Infrastructure',
-    description: 'Enterprise-grade database and backend infrastructure solutions with 99.99% uptime SLA',
-    images: ['/twitter-image.png'],
-    creator: '@bkndtrusted',
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
-  verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
-  },
-  alternates: {
-    canonical: 'https://bkndtrusted.com',
-  },
-}
+  themeColor: '#1E40AF',
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className="scroll-smooth">
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/manifest.json" />
+        {/* Preconnect to external domains */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://images.unsplash.com" />
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+
+        {/* Preload critical fonts */}
+        <link
+          rel="preload"
+          href="/fonts/inter-var.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+
+        {/* Inline critical CSS for faster first paint */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              /* Critical CSS for above-fold content */
+              *,*::before,*::after{box-sizing:border-box}*{margin:0}html,body{height:100%}body{line-height:1.5;-webkit-font-smoothing:antialiased}img,picture,video,canvas,svg{display:block;max-width:100%}input,button,textarea,select{font:inherit}p,h1,h2,h3,h4,h5,h6{overflow-wrap:break-word}:root{--trust-deep:#0F172A;--trust-action:#1E40AF;--trust-verified:#10B981;--trust-gold:#F59E0B;--surface-base:#ffffff;--text-primary:#0F172A;--text-secondary:#374151}body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--text-primary)}.container{width:100%;margin:0 auto;padding:0 1rem}@media(min-width:640px){.container{max-width:640px}}@media(min-width:768px){.container{max-width:768px}}@media(min-width:1024px){.container{max-width:1024px}}@media(min-width:1280px){.container{max-width:1280px}}.skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:skeleton-loading 1.5s infinite}@keyframes skeleton-loading{0%{background-position:200% 0}100%{background-position:-200% 0}}
+            `,
+          }}
+        />
+
+        {/* Inline font loading script for immediate execution - removed to prevent blank page */}
       </head>
-      <body className="font-sans antialiased min-h-screen bg-white text-gray-900">
-        {children}
+      <body className={`${inter.className} bg-gray-50 antialiased`}>
+        <PerformanceProvider
+          enableMonitoring={process.env.NODE_ENV === 'development'}
+          enableAnimationMonitoring={false}
+          showMetricsOverlay={process.env.NODE_ENV === 'development'}
+        >
+          {/* Skip to content link for accessibility */}
+          <a href="#main-content" className="skip-to-content">
+            Skip to main content
+          </a>
+
+          <main id="main-content">
+            {children}
+          </main>
+        </PerformanceProvider>
+
+        {/* Load performance monitoring in development */}
+        {process.env.NODE_ENV === 'development' && (
+          <Script
+            id="performance-monitoring"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                console.log('Performance monitoring enabled');
+                // Log Core Web Vitals
+                if ('web-vital' in window) {
+                  window.addEventListener('load', () => {
+                    setTimeout(() => {
+                      const vitals = ['LCP', 'FID', 'CLS', 'FCP', 'TTFB'];
+                      vitals.forEach(vital => {
+                        console.log(vital + ':', performance.getEntriesByName(vital));
+                      });
+                    }, 1000);
+                  });
+                }
+              `,
+            }}
+          />
+        )}
       </body>
     </html>
-  )
+  );
 }
