@@ -14,13 +14,50 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'BKND Trusted - Verified Local Business Directory',
-  description: 'Find trusted, verified local service providers. All businesses are background-checked, licensed, and insured. Get quotes from top-rated professionals in your area.',
-  keywords: 'local services, trusted contractors, verified businesses, home services, professional services',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://bkndtrusted.com'),
+  title: {
+    default: 'BKND Trusted | Find Verified Local Service Professionals',
+    template: '%s | BKND Trusted',
+  },
+  description: 'Find verified, licensed, and insured local service professionals. Get instant quotes from background-checked pros in your area. 100% satisfaction guaranteed.',
+  keywords: 'local services, trusted contractors, verified businesses, home services, professional services, HVAC, plumbing, electrical, licensed contractors',
+  authors: [{ name: 'BKND Trusted' }],
   openGraph: {
-    title: 'BKND Trusted - Verified Local Business Directory',
-    description: 'Find trusted, verified local service providers.',
     type: 'website',
+    locale: 'en_US',
+    url: '/',
+    title: 'BKND Trusted - Verified Local Service Professionals',
+    description: 'Find verified, licensed, and insured local service professionals. Get instant quotes from background-checked pros.',
+    siteName: 'BKND Trusted',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'BKND Trusted - Verified Service Professionals',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BKND Trusted - Find Verified Local Pros',
+    description: 'Licensed, insured, background-checked professionals. Get instant quotes.',
+    images: ['/twitter-card.jpg'],
+    creator: '@bkndtrusted',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: '9de1b0284bbffacf',
   },
   other: {
     'mobile-web-app-capable': 'yes',

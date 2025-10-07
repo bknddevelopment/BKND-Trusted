@@ -12,14 +12,16 @@
   "dependencies": {
     "@fullhuman/postcss-purgecss": "^7.0.2",
     "@heroicons/react": "^2.1.1",
-    "clsx": "^2.1.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "cssnano": "^7.1.1",
     "cssnano-preset-advanced": "^7.0.9",
     "framer-motion": "^11.18.2",
     "next": "14.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "swiper": "^11.0.5"
+    "swiper": "^11.0.5",
+    "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
     "@axe-core/puppeteer": "^4.10.2",
