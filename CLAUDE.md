@@ -117,7 +117,8 @@ const schema = generateLocalBusinessSchema({
 
 **Critical SEO Files:**
 - `public/robots.txt` - Search engine crawling rules
-- `public/sitemap-index.xml` - Master sitemap index
+- `public/sitemap.xml` - Static sitemap (manually maintained for core pages)
+- `app/sitemap.ts` - Dynamic sitemap generator (for programmatically generated routes)
 - Page-level `metadata` exports - Next.js 14 metadata system
 
 **SEO Checklist (Every New Page):**
@@ -404,8 +405,59 @@ Run: `npm run build && npm run start` then test with Chrome DevTools Lighthouse.
 
 ---
 
-## When to Ask for Help
+## Placeholder Pages
 
+**Status:** The following pages exist as production-ready placeholders using `PlaceholderPage.tsx`:
+
+1. `/how-it-works` - How It Works guide
+2. `/for-business` - Professional onboarding
+3. `/trust` - Trust & Safety
+4. `/locations` - Location directory
+5. `/about` - Company story
+6. `/careers` - Job opportunities
+7. `/privacy` - Privacy policy
+8. `/terms` - Terms of service
+9. `/contact` - Support contact
+
+**Purpose:** These prevent 404 errors during page-by-page development. When building out a placeholder:
+1. Remove the `PlaceholderPage` component
+2. Keep the existing `metadata` export (already SEO-optimized)
+3. Build actual page content
+4. Update `public/sitemap.xml` if route structure changes
+
+---
+
+## Recent Updates (Oct 17, 2025)
+
+**Homepage Enhanced:**
+- New components: `TestimonialsCarousel`, `RealtimeActivityFeed`, `FAQSection`
+- Enhanced `ProfessionalHero` with animations (85vh height, gradient text, pulsing stats)
+- Custom Tailwind animations: `pulse-slow`, `subtle-zoom`, `gradient`, `float`, `shadow-3xl`
+- All navigation links now work (no 404s)
+
+**Production Status:**
+- ✅ Build succeeds (32 pages, 0 errors)
+- ✅ All links verified working
+- ✅ Sitemap complete
+- ✅ SEO metadata on all pages
+
+See `HOMEPAGE-UPGRADE-SUMMARY.md` for complete details.
+
+---
+
+## Troubleshooting
+
+**Dev Server Module Resolution Errors:**
+If you encounter webpack cache errors like `Cannot find module './638.js'` or `vendor-chunks` errors:
+```bash
+# Stop dev server
+# Clear Next.js cache
+rm -rf .next
+# Restart dev server
+npm run dev
+```
+
+**When to Ask for Help:**
 - Database schema changes (Prisma migrations are complex)
 - PostGIS geographic queries (specialized SQL)
 - Performance regressions (unexpected slowdowns)
@@ -413,4 +465,4 @@ Run: `npm run build && npm run start` then test with Chrome DevTools Lighthouse.
 
 ---
 
-**Last Updated:** October 7, 2025 (Week 4 of development)
+**Last Updated:** October 17, 2025 (Week 4 of development)

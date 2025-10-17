@@ -1,0 +1,562 @@
+[
+  {
+    "id": "midpoint-roofing",
+    "name": "Midpoint Roofing",
+    "slug": "midpoint-roofing-union-county-nj",
+    "rating": 5,
+    "reviewCount": 101,
+    "category": "Roofing contractor",
+    "categories": [
+      "Roofing",
+      "Residential",
+      "Commercial",
+      "Home Improvement"
+    ],
+    "address": "2204 Morris Ave Suite 302b",
+    "city": "Union",
+    "state": "NJ",
+    "zip": "07083",
+    "county": "Union County",
+    "phone": "(973) 834-7570",
+    "hours": "Closed · Opens 9 AM Fri",
+    "website": "https://midpointroofing.com",
+    "description": "#1 Trusted New Jersey Roofing Company. Highly-regarded roofing company in Union County and all of North and Central New Jersey. Fully certified and insured delivering unparalleled roofing solutions.",
+    "specialties": [
+      "Roofing Repairs",
+      "Storm Damage Repairs",
+      "Roofing Inspection",
+      "Residential Roofing",
+      "Commercial Roofing",
+      "Asphalt Shingle Roofing"
+    ],
+    "yearEstablished": null,
+    "licensed": true,
+    "insured": true,
+    "certifications": [
+      "GAF Certified"
+    ],
+    "sources": {
+      "google": {
+        "rating": 5,
+        "reviewCount": 101,
+        "verified": true
+      }
+    },
+    "claimed": false,
+    "verificationLevel": "enhanced",
+    "insuranceWork": true,
+    "location": "Martin Building",
+    "trustScore": 58,
+    "trustScoreBreakdown": {
+      "total": 58,
+      "reviewSignal": 26,
+      "citationConsistency": 8,
+      "webPresence": 10,
+      "licensingSignal": 14,
+      "responsiveness": 0
+    },
+    "badge": "Trusted",
+    "badgeLevel": "trusted",
+    "badgeColor": "green"
+  },
+  {
+    "id": "mega-pro-roofing-masonry",
+    "name": "Mega Pro Roofing & Masonry",
+    "slug": "mega-pro-roofing-masonry-union-county-nj",
+    "rating": 4.9,
+    "reviewCount": 111,
+    "category": "Roofing contractor",
+    "categories": [
+      "Roofing",
+      "Masonry",
+      "Siding",
+      "Home Improvement"
+    ],
+    "address": "1284 Glenn Ave",
+    "city": "Union",
+    "state": "NJ",
+    "zip": "07083",
+    "county": "Union County",
+    "phone": "(908) 913-7747",
+    "email": "megapro7512@gmail.com",
+    "hours": "Closed · Opens 6 AM Fri",
+    "website": "https://megaproroofing.com",
+    "description": "Fast, courteous and professional construction contractors specializing in roofs, siding and masonry work. Trusted contractor based in Union, NJ, known for professional and thorough services.",
+    "specialties": [
+      "Roof Installation",
+      "Roof Repair",
+      "Masonry Work",
+      "Siding",
+      "Emergency Repairs"
+    ],
+    "reviews": [
+      {
+        "id": "review-1",
+        "author": "L.",
+        "rating": 5,
+        "date": "Recent",
+        "text": "The work they did was well done and finished in timely manner.",
+        "verified": true,
+        "source": "Google"
+      },
+      {
+        "id": "review-2",
+        "author": "H.",
+        "rating": 5,
+        "date": "Recent",
+        "text": "I highly recommend this company for their quality work and fair price.",
+        "verified": true,
+        "source": "Google"
+      },
+      {
+        "id": "review-3",
+        "author": "Google User",
+        "rating": 5,
+        "date": "Recent",
+        "text": "Staff was courteous, service was prompt, and the job was completed flawlessly.",
+        "verified": true,
+        "source": "Google"
+      }
+    ],
+    "yearEstablished": null,
+    "licensed": true,
+    "insured": true,
+    "sources": {
+      "google": {
+        "rating": 4.9,
+        "reviewCount": 111,
+        "verified": true
+      }
+    },
+    "claimed": false,
+    "verificationLevel": "enhanced",
+    "trustScore": 57,
+    "trustScoreBreakdown": {
+      "total": 57,
+      "reviewSignal": 25,
+      "citationConsistency": 8,
+      "webPresence": 10,
+      "licensingSignal": 14,
+      "responsiveness": 0
+    },
+    "badge": "Trusted",
+    "badgeLevel": "trusted",
+    "badgeColor": "green"
+  },
+  {
+    "id": "herts-roofing-construction",
+    "name": "Herts Roofing & Construction",
+    "slug": "herts-roofing-construction-union-county-nj",
+    "rating": 4.9,
+    "reviewCount": 112,
+    "category": "Roofing contractor",
+    "categories": [
+      "Roofing",
+      "Construction",
+      "Home Improvement"
+    ],
+    "address": "20 Commerce Dr Suite 135",
+    "city": "Cranford",
+    "state": "NJ",
+    "zip": "07016",
+    "county": "Union County",
+    "phone": "(908) 206-4240",
+    "hours": "Open · Closes 11 PM",
+    "website": "",
+    "description": "Full-service roofing and construction company serving Union County. Known for quality workmanship and customer satisfaction.",
+    "specialties": [
+      "Roof Replacement",
+      "Roof Repair",
+      "Siding",
+      "Gutters",
+      "Construction Services"
+    ],
+    "yearEstablished": null,
+    "licensed": true,
+    "insured": true,
+    "sources": {
+      "google": {
+        "rating": 4.9,
+        "reviewCount": 112,
+        "verified": true
+      }
+    },
+    "claimed": false,
+    "verificationLevel": "basic",
+    "trustScore": 47,
+    "trustScoreBreakdown": {
+      "total": 47,
+      "reviewSignal": 25,
+      "citationConsistency": 8,
+      "webPresence": 0,
+      "licensingSignal": 14,
+      "responsiveness": 0
+    },
+    "badge": "Listed",
+    "badgeLevel": "listed",
+    "badgeColor": "gray"
+  },
+  {
+    "id": "rsb-construction-llc",
+    "name": "RSB Construction LLC",
+    "slug": "rsb-construction-llc-union-county-nj",
+    "rating": 4.9,
+    "reviewCount": 74,
+    "category": "Roofing contractor",
+    "categories": [
+      "Roofing",
+      "Construction",
+      "Home Improvement"
+    ],
+    "address": "420 Maple Ave",
+    "city": "Elizabeth",
+    "state": "NJ",
+    "zip": "07202",
+    "county": "Union County",
+    "phone": "",
+    "hours": "",
+    "website": "",
+    "description": "Full-service construction company specializing in roofing for residential and commercial properties.",
+    "specialties": [
+      "Roofing",
+      "Construction",
+      "Renovations",
+      "Home Improvements"
+    ],
+    "yearEstablished": null,
+    "licensed": true,
+    "insured": true,
+    "sources": {
+      "google": {
+        "rating": 4.9,
+        "reviewCount": 74,
+        "verified": true
+      }
+    },
+    "claimed": false,
+    "verificationLevel": "basic",
+    "trustScore": 47,
+    "trustScoreBreakdown": {
+      "total": 47,
+      "reviewSignal": 25,
+      "citationConsistency": 8,
+      "webPresence": 0,
+      "licensingSignal": 14,
+      "responsiveness": 0
+    },
+    "badge": "Listed",
+    "badgeLevel": "listed",
+    "badgeColor": "gray"
+  },
+  {
+    "id": "clark-brothers-roofing",
+    "name": "Clark Brothers Roofing & Construction",
+    "slug": "clark-brothers-roofing-union-county-nj",
+    "rating": 4.9,
+    "reviewCount": 92,
+    "category": "Roofing contractor",
+    "categories": [
+      "Roofing",
+      "Construction",
+      "Home Improvement"
+    ],
+    "address": "",
+    "city": "Clark",
+    "state": "NJ",
+    "zip": "",
+    "county": "Union County",
+    "phone": "",
+    "hours": "",
+    "website": "",
+    "description": "Professional roofing and construction services with a focus on quality and customer satisfaction.",
+    "specialties": [
+      "Roof Installation",
+      "Siding",
+      "Windows",
+      "Gutters",
+      "Construction"
+    ],
+    "yearEstablished": null,
+    "licensed": true,
+    "insured": true,
+    "sources": {
+      "google": {
+        "rating": 4.9,
+        "reviewCount": 92,
+        "verified": true
+      }
+    },
+    "claimed": false,
+    "verificationLevel": "basic",
+    "trustScore": 47,
+    "trustScoreBreakdown": {
+      "total": 47,
+      "reviewSignal": 25,
+      "citationConsistency": 8,
+      "webPresence": 0,
+      "licensingSignal": 14,
+      "responsiveness": 0
+    },
+    "badge": "Listed",
+    "badgeLevel": "listed",
+    "badgeColor": "gray"
+  },
+  {
+    "id": "nj-pro-roofing-painting",
+    "name": "NJ Pro Roofing and Painting LLC",
+    "slug": "nj-pro-roofing-painting-union-county-nj",
+    "rating": 4.9,
+    "reviewCount": 38,
+    "category": "Roofing contractor",
+    "categories": [
+      "Roofing",
+      "Painting",
+      "Home Improvement"
+    ],
+    "address": "985 Roosevelt Ave",
+    "city": "Carteret",
+    "state": "NJ",
+    "zip": "07008",
+    "county": "Union County",
+    "phone": "(908) 477-7667",
+    "hours": "Closes 6 PM · Opens 8 AM Fri",
+    "website": "",
+    "description": "Professional roofing and painting services for residential and commercial properties in Union County.",
+    "specialties": [
+      "Roofing",
+      "Exterior Painting",
+      "Interior Painting",
+      "Roof Maintenance"
+    ],
+    "yearEstablished": null,
+    "licensed": true,
+    "insured": true,
+    "sources": {
+      "google": {
+        "rating": 4.9,
+        "reviewCount": 38,
+        "verified": true
+      }
+    },
+    "claimed": false,
+    "verificationLevel": "basic",
+    "trustScore": 46,
+    "trustScoreBreakdown": {
+      "total": 46,
+      "reviewSignal": 24,
+      "citationConsistency": 8,
+      "webPresence": 0,
+      "licensingSignal": 14,
+      "responsiveness": 0
+    },
+    "badge": "Listed",
+    "badgeLevel": "listed",
+    "badgeColor": "gray"
+  },
+  {
+    "id": "jersey-eco-roofing",
+    "name": "Jersey Eco Roofing",
+    "slug": "jersey-eco-roofing-union-county-nj",
+    "rating": 4.8,
+    "reviewCount": 45,
+    "category": "Roofing contractor",
+    "categories": [
+      "Roofing",
+      "Eco-Friendly Services",
+      "Home Improvement"
+    ],
+    "address": "",
+    "city": "Summit",
+    "state": "NJ",
+    "zip": "",
+    "county": "Union County",
+    "phone": "",
+    "hours": "",
+    "website": "",
+    "description": "Eco-friendly roofing solutions for environmentally conscious homeowners in Union County.",
+    "specialties": [
+      "Green Roofing",
+      "Solar Roof Integration",
+      "Sustainable Materials",
+      "Energy-Efficient Roofing"
+    ],
+    "yearEstablished": null,
+    "licensed": true,
+    "insured": true,
+    "sources": {
+      "google": {
+        "rating": 4.8,
+        "reviewCount": 45,
+        "verified": true
+      }
+    },
+    "claimed": false,
+    "verificationLevel": "basic",
+    "trustScore": 45,
+    "trustScoreBreakdown": {
+      "total": 45,
+      "reviewSignal": 23,
+      "citationConsistency": 8,
+      "webPresence": 0,
+      "licensingSignal": 14,
+      "responsiveness": 0
+    },
+    "badge": "Listed",
+    "badgeLevel": "listed",
+    "badgeColor": "gray"
+  },
+  {
+    "id": "roofing-guys-union",
+    "name": "Roofing Guys Union",
+    "slug": "roofing-guys-union-nj",
+    "rating": 4.7,
+    "reviewCount": 89,
+    "category": "Roofing contractor",
+    "categories": [
+      "Roofing",
+      "Home Improvement"
+    ],
+    "address": "",
+    "city": "Union",
+    "state": "NJ",
+    "zip": "07083",
+    "county": "Union County",
+    "phone": "",
+    "hours": "",
+    "website": "",
+    "description": "Reliable roofing services for Union and surrounding areas. Family-owned and operated.",
+    "specialties": [
+      "Roof Repair",
+      "Roof Replacement",
+      "Gutter Services",
+      "Emergency Repairs"
+    ],
+    "yearEstablished": null,
+    "licensed": true,
+    "insured": true,
+    "sources": {
+      "google": {
+        "rating": 4.7,
+        "reviewCount": 89,
+        "verified": true
+      }
+    },
+    "claimed": false,
+    "verificationLevel": "basic",
+    "trustScore": 45,
+    "trustScoreBreakdown": {
+      "total": 45,
+      "reviewSignal": 23,
+      "citationConsistency": 8,
+      "webPresence": 0,
+      "licensingSignal": 14,
+      "responsiveness": 0
+    },
+    "badge": "Listed",
+    "badgeLevel": "listed",
+    "badgeColor": "gray"
+  },
+  {
+    "id": "garcia-sons-roofing",
+    "name": "Garcia & Sons Roofing Company",
+    "slug": "garcia-sons-roofing-union-county-nj",
+    "rating": 4.8,
+    "reviewCount": 67,
+    "category": "Roofing contractor",
+    "categories": [
+      "Roofing",
+      "Home Improvement"
+    ],
+    "address": "",
+    "city": "Elizabeth",
+    "state": "NJ",
+    "zip": "",
+    "county": "Union County",
+    "phone": "",
+    "hours": "",
+    "website": "",
+    "description": "Family-owned roofing company serving Union County for generations. Quality workmanship guaranteed.",
+    "specialties": [
+      "Residential Roofing",
+      "Commercial Roofing",
+      "Roof Inspections",
+      "Storm Damage Repair"
+    ],
+    "yearEstablished": null,
+    "licensed": true,
+    "insured": true,
+    "sources": {
+      "google": {
+        "rating": 4.8,
+        "reviewCount": 67,
+        "verified": true
+      }
+    },
+    "claimed": false,
+    "verificationLevel": "basic",
+    "trustScore": 45,
+    "trustScoreBreakdown": {
+      "total": 45,
+      "reviewSignal": 23,
+      "citationConsistency": 8,
+      "webPresence": 0,
+      "licensingSignal": 14,
+      "responsiveness": 0
+    },
+    "badge": "Listed",
+    "badgeLevel": "listed",
+    "badgeColor": "gray"
+  },
+  {
+    "id": "highview-roofing-construction",
+    "name": "HighView Roofing & Construction",
+    "slug": "highview-roofing-construction-union-county-nj",
+    "rating": 4.8,
+    "reviewCount": 56,
+    "category": "Roofing contractor",
+    "categories": [
+      "Roofing",
+      "Construction",
+      "Home Improvement"
+    ],
+    "address": "",
+    "city": "Westfield",
+    "state": "NJ",
+    "zip": "",
+    "county": "Union County",
+    "phone": "",
+    "hours": "",
+    "website": "",
+    "description": "Trusted roofing and construction company serving Union County communities with integrity and expertise.",
+    "specialties": [
+      "Roof Replacement",
+      "Roof Repair",
+      "Storm Damage",
+      "Insurance Claims"
+    ],
+    "yearEstablished": null,
+    "licensed": true,
+    "insured": true,
+    "sources": {
+      "google": {
+        "rating": 4.8,
+        "reviewCount": 56,
+        "verified": true
+      }
+    },
+    "claimed": false,
+    "verificationLevel": "basic",
+    "trustScore": 45,
+    "trustScoreBreakdown": {
+      "total": 45,
+      "reviewSignal": 23,
+      "citationConsistency": 8,
+      "webPresence": 0,
+      "licensingSignal": 14,
+      "responsiveness": 0
+    },
+    "badge": "Listed",
+    "badgeLevel": "listed",
+    "badgeColor": "gray"
+  }
+]

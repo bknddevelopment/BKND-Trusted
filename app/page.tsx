@@ -7,6 +7,9 @@ import ProfessionalHero from '@/components/ProfessionalHero';
 import TrustBanner from '@/components/TrustBanner';
 import ProfessionalCategoryCard from '@/components/ProfessionalCategoryCard';
 import ProfessionalBusinessCard from '@/components/ProfessionalBusinessCard';
+import TestimonialsCarousel from '@/components/TestimonialsCarousel';
+import RealtimeActivityFeed from '@/components/RealtimeActivityFeed';
+import FAQSection from '@/components/FAQSection';
 import { generateOrganizationSchema } from '@/lib/seo';
 import {
   CheckBadgeIcon,
@@ -230,6 +233,13 @@ export default function HomePage() {
       {/* Trust Banner */}
       <TrustBanner />
 
+      {/* Real-time Activity Feed */}
+      <section className="py-8 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <RealtimeActivityFeed />
+        </div>
+      </section>
+
       {/* Popular Services */}
       <section className="py-section bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -322,6 +332,9 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Testimonials Carousel */}
+      <TestimonialsCarousel />
+
       {/* How It Works */}
       <section className="py-section bg-gradient-to-br from-brand-900 to-brand-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -376,6 +389,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* FAQ Section */}
+      <FAQSection />
 
       {/* Final CTA */}
       <section className="py-section bg-neutral-50">
